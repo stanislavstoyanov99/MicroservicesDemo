@@ -2,7 +2,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
-
+using Play.Catalog.Service.Entities;
 using Play.Catalog.Service.Repositories;
 using Play.Catalog.Service.Settings;
 
@@ -21,7 +21,12 @@ builder.Services
     });
 
 builder.Services
-    .AddSingleton<IItemsRepository, ItemsRepository>();
+    .AddSingleton<IRepository<Item>>(serviceProvider =>
+    {
+        var database = serviceProvider.GetService<IMongoDatabase>();
+
+        return new MongoRepository<Item>(database, "items");
+    });
 
 builder.Services
     .AddControllers(options =>
@@ -36,8 +41,8 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwagger()
+       .UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

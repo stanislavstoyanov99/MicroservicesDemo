@@ -4,25 +4,23 @@
 
     using Play.Catalog.Service.Entities;
 
-    public class ItemsRepository : IItemsRepository
+    public class MongoRepository<T> : IRepository<T> where T : IEntity
     {
-        private const string collectionName = "items";
+        private readonly IMongoCollection<T> dbCollection;
 
-        private readonly IMongoCollection<Item> dbCollection;
+        private readonly FilterDefinitionBuilder<T> filterBuilder = Builders<T>.Filter;
 
-        private readonly FilterDefinitionBuilder<Item> filterBuilder = Builders<Item>.Filter;
-
-        public ItemsRepository(IMongoDatabase database)
+        public MongoRepository(IMongoDatabase database, string collectionName)
         {
-            this.dbCollection = database.GetCollection<Item>(collectionName);
+            this.dbCollection = database.GetCollection<T>(collectionName);
         }
 
-        public async Task<IReadOnlyCollection<Item>> GetAllAsync()
+        public async Task<IReadOnlyCollection<T>> GetAllAsync()
         {
             return await dbCollection.Find(filterBuilder.Empty).ToListAsync();
         }
 
-        public async Task<Item> GetAsync(Guid id)
+        public async Task<T> GetAsync(Guid id)
         {
             var filter = filterBuilder.Eq(entity => entity.Id, id);
 
@@ -31,7 +29,7 @@
             return item;
         }
 
-        public async Task CreateAsync(Item entity)
+        public async Task CreateAsync(T entity)
         {
             if (entity == null)
             {
@@ -41,7 +39,7 @@
             await dbCollection.InsertOneAsync(entity);
         }
 
-        public async Task UpdateAsync(Item entity)
+        public async Task UpdateAsync(T entity)
         {
             if (entity == null)
             {
