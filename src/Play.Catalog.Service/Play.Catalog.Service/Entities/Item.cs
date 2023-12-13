@@ -1,5 +1,7 @@
 ﻿namespace Play.Catalog.Service.Entities
 {
+    using Play.Common;
+
     public class Item : IEntity
     {
         public Guid Id { get; set; }
