@@ -15,7 +15,7 @@ namespace Play.Common.MassTransit
                 .AddMassTransit(configure =>
                 {
                     configure.AddConsumers(Assembly.GetEntryAssembly());
-                    
+
                     configure.UsingRabbitMq((context, configurator) =>
                     {
                         var configuration = context.GetService<IConfiguration>();
@@ -24,6 +24,9 @@ namespace Play.Common.MassTransit
 
                         configurator.Host(rabbitMQSettings.Host);
                         configurator.ConfigureEndpoints(context, new KebabCaseEndpointNameFormatter(serviceSettings.ServiceName, false));
+                        configurator.UseMessageRetry(retryConfigurator => {
+                            retryConfigurator.Interval(3, TimeSpan.FromSeconds(5));
+                        });
                     });
                 });
             
